@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #0c0a09;
+    --copper: #d4956a;
+    --copper-muted: #7c4a2b;
+  }
+
+  body {
+    @apply bg-surface text-stone-300 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    background: rgba(212, 149, 106, 0.25);
+    color: #e8b48a;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-stone-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-700;
+}
+
+/* Noise texture overlay */
+@layer utilities {
+  .noise {
+    position: relative;
+  }
+
+  .noise::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  .glass-card {
+    @apply bg-white/[0.025] border border-white/[0.06];
+    backdrop-filter: blur(12px);
+  }
+
+  .glass-card-hover {
+    @apply transition-all duration-500;
+  }
+
+  .glass-card-hover:hover {
+    @apply bg-white/[0.04] border-copper-400/20;
+    box-shadow: 0 0 40px -12px rgba(212, 149, 106, 0.08);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-stone-100 via-stone-300 to-stone-500;
+  }
+}
+
+/* Tech ticker */
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+/* Warm ambient glow */
+.ambient-glow {
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    rgba(212, 149, 106, 0.06) 0%,
+    transparent 70%
+  );
+}
