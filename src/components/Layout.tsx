@@ -7,29 +7,35 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="noise min-h-screen w-full relative overflow-x-hidden bg-surface">
+    <div className="min-h-screen w-full bg-term-bg overflow-x-hidden">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
 
-      {/* Warm ambient glow — single source, top center */}
-      <div className="fixed inset-0 z-0 pointer-events-none ambient-glow" />
-
-      {/* Subtle vignette */}
-      <div className="fixed inset-0 z-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 40%, #0c0a09 100%)'
-        }}
-      />
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
-        <motion.main
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full"
+        {/* Terminal window */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+          className="bg-term-surface border border-term-border rounded-xl overflow-hidden shadow-2xl shadow-black/50"
         >
-          {children}
-        </motion.main>
+          {/* Title bar */}
+          <div className="flex items-center gap-2 px-4 py-3 bg-term-chrome border-b border-term-border">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+            </div>
+            <span className="flex-1 text-center text-xs text-term-muted font-mono">matan@platform:~</span>
+            <div className="w-[52px]" /> {/* Balance the dots */}
+          </div>
 
-        <footer className="mt-24 pt-8 border-t border-white/[0.04] flex items-center justify-between text-xs text-stone-600 font-mono">
+          {/* Terminal content */}
+          <div className="p-6 sm:p-8 md:p-10">
+            {children}
+          </div>
+        </motion.div>
+
+        {/* Footer — outside terminal */}
+        <footer className="mt-6 flex items-center justify-between text-[11px] text-term-dim font-mono px-2">
           <span>
             &copy; {new Date().getFullYear()} Matan Ryngler
             {' · '}
@@ -37,9 +43,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               href="https://github.com/matanryngler/landing-page"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-stone-500 hover:text-stone-400 transition-colors"
+              className="text-term-muted hover:text-term-green transition-colors"
             >
-              Source
+              source
             </a>
           </span>
           <span>Tel Aviv, IL</span>

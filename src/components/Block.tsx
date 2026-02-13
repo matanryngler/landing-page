@@ -18,7 +18,7 @@ export const Block: React.FC<BlockProps> = ({ className, children, whileHover })
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             whileHover={whileHover}
             className={cn(
-                "glass-card glass-card-hover rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden",
+                "card card-hover rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden",
                 className
             )}
         >
