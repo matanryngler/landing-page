@@ -1,39 +1,126 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Coffee, Mail, ArrowUpRight, Copy, Check } from 'lucide-react';
+import { Mail, ArrowUpRight, Copy, Check } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-const XIcon = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-);
-
 const TECH = ['AI Agents', 'Claude Code', 'MCP', 'Kubernetes', 'Python', 'Go', 'Terraform', 'AWS', 'EKS', 'ArgoCD'];
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&';
 
-/* ── Typing hook ── */
-const useTyping = (text: string, speed = 60, delay = 600) => {
+/* ── Command definitions with typo variants ── */
+const COMMANDS = [
+    { correct: 'whoami', typo: 'whomai', typoStart: 3, speed: 90 },
+    { correct: 'ls ~/projects/', typo: 'ls ~/projcets/', typoStart: 9, speed: 65 },
+    { correct: 'cat experience.md', typo: 'cat experience.dm', typoStart: 15, speed: 65 },
+    { correct: 'cat links.txt', typo: 'cat links.tct', typoStart: 11, speed: 65 },
+];
+
+const cmdDuration = (cmd: typeof COMMANDS[number], hasTypo: boolean) => {
+    if (!hasTypo) return cmd.correct.length * cmd.speed;
+    const bs = Math.round(cmd.speed * 0.4);
+    return cmd.typo.length * cmd.speed + 500
+        + (cmd.typo.length - cmd.typoStart) * bs + 250
+        + (cmd.correct.length - cmd.typoStart) * cmd.speed;
+};
+
+/* ── Unified typing hook — handles both normal and typo typing ── */
+const useSmartTyping = (correct: string, typo: string | null, typoStart: number, speed: number, delay: number) => {
     const [displayed, setDisplayed] = useState('');
+    const [done, setDone] = useState(false);
+    const mounted = useRef(true);
+
+    useEffect(() => {
+        mounted.current = true;
+        const frames: { text: string; wait: number }[] = [];
+
+        if (typo) {
+            for (let i = 1; i <= typo.length; i++)
+                frames.push({ text: typo.slice(0, i), wait: speed });
+            frames.push({ text: typo, wait: 500 });
+            for (let i = typo.length - 1; i >= typoStart; i--)
+                frames.push({ text: typo.slice(0, i), wait: Math.round(speed * 0.4) });
+            frames.push({ text: correct.slice(0, typoStart), wait: 250 });
+            for (let i = typoStart + 1; i <= correct.length; i++)
+                frames.push({ text: correct.slice(0, i), wait: speed });
+        } else {
+            for (let i = 1; i <= correct.length; i++)
+                frames.push({ text: correct.slice(0, i), wait: speed });
+        }
+
+        let idx = 0;
+        let timeout: ReturnType<typeof setTimeout>;
+
+        const next = () => {
+            if (!mounted.current) return;
+            if (idx >= frames.length) { setDone(true); return; }
+            const f = frames[idx];
+            setDisplayed(f.text);
+            idx++;
+            timeout = setTimeout(next, f.wait);
+        };
+
+        timeout = setTimeout(next, delay);
+        return () => { mounted.current = false; clearTimeout(timeout); };
+    }, [correct, typo, typoStart, speed, delay]);
+
+    return { displayed, done };
+};
+
+/* ── Scramble text effect ── */
+const useScramble = (text: string, trigger: boolean, speed = 40, iterations = 3) => {
+    const [displayed, setDisplayed] = useState(text.replace(/\S/g, ' '));
     const [done, setDone] = useState(false);
 
     useEffect(() => {
-        let i = 0;
-        let interval: ReturnType<typeof setInterval>;
-        const timer = setTimeout(() => {
-            interval = setInterval(() => {
-                i++;
-                if (i <= text.length) {
-                    setDisplayed(text.slice(0, i));
-                } else {
-                    setDone(true);
-                    clearInterval(interval);
-                }
-            }, speed);
-        }, delay);
-        return () => { clearTimeout(timer); if (interval) clearInterval(interval); };
-    }, [text, speed, delay]);
+        if (!trigger) return;
+
+        let frame = 0;
+        const totalFrames = text.length * iterations;
+        let raf: ReturnType<typeof setInterval>;
+
+        raf = setInterval(() => {
+            frame++;
+            const resolved = Math.floor(frame / iterations);
+            const result = text
+                .split('')
+                .map((char, i) => {
+                    if (char === ' ') return ' ';
+                    if (i < resolved) return char;
+                    return CHARS[Math.floor(Math.random() * CHARS.length)];
+                })
+                .join('');
+
+            setDisplayed(result);
+
+            if (frame >= totalFrames) {
+                setDisplayed(text);
+                setDone(true);
+                clearInterval(raf);
+            }
+        }, speed);
+
+        return () => clearInterval(raf);
+    }, [trigger, text, speed, iterations]);
 
     return { displayed, done };
+};
+
+/* ── Live clock ── */
+const useTelAvivTime = () => {
+    const [time, setTime] = useState('');
+    useEffect(() => {
+        const tick = () => {
+            setTime(new Date().toLocaleTimeString('en-GB', {
+                timeZone: 'Asia/Jerusalem',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            }));
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, []);
+    return time;
 };
 
 /* ── Prompt ── */
@@ -64,19 +151,35 @@ const Fade = ({ show, children, className }: { show: boolean; children: React.Re
 };
 
 /* ── Main ── */
-const BentoGrid: React.FC = () => {
-    // Cascading delays: each starts after prev finishes + 500ms content gap
-    // whoami: 6×70=420ms, ls: 14×50=700ms, cat exp: 17×50=850ms, cat links: 13×50=650ms
-    const t1 = useTyping('whoami', 70, 500);           // done ~920
-    const t2 = useTyping('ls ~/projects/', 50, 1420);   // done ~2120
-    const t3 = useTyping('cat experience.md', 50, 2620);// done ~3470
-    const t4 = useTyping('cat links.txt', 50, 3970);    // done ~4620
+const Terminal: React.FC = () => {
+    // Randomly decide which commands get typos (stable per mount)
+    const typoFlags = useRef<boolean[] | null>(null);
+    if (typoFlags.current === null) {
+        typoFlags.current = COMMANDS.map(() => Math.random() < 0.25);
+    }
+    const flags = typoFlags.current;
+
+    // Compute cascading delays dynamically (typo commands take longer)
+    const GAP = 600;
+    const delays = [500];
+    for (let i = 1; i < COMMANDS.length; i++) {
+        delays.push(delays[i - 1] + cmdDuration(COMMANDS[i - 1], flags[i - 1]) + GAP);
+    }
+    const totalEnd = delays[3] + cmdDuration(COMMANDS[3], flags[3]);
+
+    const t1 = useSmartTyping(COMMANDS[0].correct, flags[0] ? COMMANDS[0].typo : null, COMMANDS[0].typoStart, COMMANDS[0].speed, delays[0]);
+    const t2 = useSmartTyping(COMMANDS[1].correct, flags[1] ? COMMANDS[1].typo : null, COMMANDS[1].typoStart, COMMANDS[1].speed, delays[1]);
+    const t3 = useSmartTyping(COMMANDS[2].correct, flags[2] ? COMMANDS[2].typo : null, COMMANDS[2].typoStart, COMMANDS[2].speed, delays[2]);
+    const t4 = useSmartTyping(COMMANDS[3].correct, flags[3] ? COMMANDS[3].typo : null, COMMANDS[3].typoStart, COMMANDS[3].speed, delays[3]);
+
+    const nameScramble = useScramble('Matan Ryngler', t1.done, 35, 4);
+    const telAvivTime = useTelAvivTime();
 
     const [showCursor, setShowCursor] = useState(false);
     useEffect(() => {
-        const id = setTimeout(() => setShowCursor(true), 5100);
+        const id = setTimeout(() => setShowCursor(true), totalEnd + 400);
         return () => clearTimeout(id);
-    }, []);
+    }, [totalEnd]);
 
     // Auto-scroll as new sections appear
     const endRef = useRef<HTMLDivElement>(null);
@@ -100,9 +203,15 @@ const BentoGrid: React.FC = () => {
                                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border border-term-border object-cover grayscale hover:grayscale-0 transition-all duration-500"
                                 />
                                 <div className="min-w-0">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Matan Ryngler</h1>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                                        {nameScramble.displayed}
+                                    </h1>
                                     <p className="text-term-amber text-sm mt-1">Head of Platform · Legit Security</p>
-                                    <p className="text-term-muted text-xs mt-1">Tel Aviv, Israel</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-term-muted text-xs">Tel Aviv, Israel</span>
+                                        <span className="text-term-dim text-xs">·</span>
+                                        <span className="text-term-dim text-xs tabular-nums">{telAvivTime}</span>
+                                    </div>
                                 </div>
                             </div>
                             <p className="text-sm text-term-text leading-relaxed font-sans max-w-lg">
@@ -120,7 +229,7 @@ const BentoGrid: React.FC = () => {
 
             {/* ── ls projects ── */}
             {t2.displayed && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <CmdLine text={t2.displayed} typing={!t2.done} />
                     <Fade show={t2.done}>
                         <div className="space-y-4">
@@ -137,7 +246,7 @@ const BentoGrid: React.FC = () => {
 
             {/* ── cat experience ── */}
             {t3.displayed && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <CmdLine text={t3.displayed} typing={!t3.done} />
                     <Fade show={t3.done}>
                         <div className="border border-term-border rounded-lg p-5 space-y-3">
@@ -160,15 +269,18 @@ const BentoGrid: React.FC = () => {
 
             {/* ── cat links ── */}
             {t4.displayed && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <CmdLine text={t4.displayed} typing={!t4.done} />
                     <Fade show={t4.done}>
-                        <div>
-                            <div className="flex flex-wrap gap-3 mb-5">
-                                <SocialLink href="https://github.com/matanryngler/" icon={<Github className="w-4 h-4" />} label="github" />
-                                <SocialLink href="https://www.linkedin.com/in/matanryngler/" icon={<Linkedin className="w-4 h-4" />} label="linkedin" />
-                                <SocialLink href="https://x.com/matanryngler" icon={<XIcon className="w-4 h-4" />} label="x.com" />
-                                <SocialLink href="https://buymeacoffee.com/matanryngler" icon={<Coffee className="w-4 h-4" />} label="coffee" />
+                        <div className="space-y-4">
+                            <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs">
+                                <InlineLink href="https://github.com/matanryngler/" label="github" />
+                                <span className="text-term-dim">/</span>
+                                <InlineLink href="https://www.linkedin.com/in/matanryngler/" label="linkedin" />
+                                <span className="text-term-dim">/</span>
+                                <InlineLink href="https://x.com/matanryngler" label="x.com" />
+                                <span className="text-term-dim">/</span>
+                                <InlineLink href="https://buymeacoffee.com/matanryngler" label="buy me a coffee" />
                             </div>
                             <EmailLine />
                         </div>
@@ -212,11 +324,11 @@ const ProjectEntry = ({ name, tag, tagColor, description, url }: {
     );
 };
 
-/* ── Social link ── */
-const SocialLink = ({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) => (
+/* ── Inline text link ── */
+const InlineLink = ({ href, label }: { href: string; label: string }) => (
     <a href={href} target="_blank" rel="noopener noreferrer"
-       className="flex items-center gap-2 px-3 py-2 rounded-lg border border-term-border text-term-muted hover:text-term-green hover:border-term-green/30 transition-all text-xs">
-        {icon}<span>{label}</span>
+       className="text-term-muted hover:text-term-green transition-colors">
+        {label}
     </a>
 );
 
@@ -235,4 +347,4 @@ const EmailLine = () => {
     );
 };
 
-export default BentoGrid;
+export default Terminal;

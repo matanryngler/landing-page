@@ -1,10 +1,10 @@
 import Layout from './components/Layout';
-import BentoGrid from './components/BentoGrid';
+import Terminal from './components/Terminal';
 
 function App() {
   return (
     <Layout>
-      <BentoGrid />
+      <Terminal />
     </Layout>
   );
 }
