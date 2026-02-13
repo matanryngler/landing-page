@@ -35,7 +35,7 @@ const BentoGrid: React.FC = () => {
         <div className="flex flex-col gap-3">
             {/* Top section -- intro, location, socials, ticker */}
             <motion.div
-                className="grid grid-cols-1 md:grid-cols-3 gap-3 auto-rows-[140px] md:auto-rows-[180px]"
+                className="grid grid-cols-1 md:grid-cols-3 gap-3 auto-rows-auto md:auto-rows-[180px]"
                 initial="initial"
                 animate="animate"
                 variants={{
@@ -51,7 +51,7 @@ const BentoGrid: React.FC = () => {
             >
 
                 {/* 1. Intro Block (2x2) */}
-                <Block className="col-span-1 md:col-span-2 row-span-2 !p-0">
+                <Block className="col-span-1 md:col-span-2 md:row-span-2 min-h-[280px] !p-0">
                     <div className="w-full h-full flex flex-col justify-end p-8 sm:p-10 relative group">
                         {/* Decorative gradient orb */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-copper-400/[0.04] rounded-full blur-[80px]" />
@@ -152,14 +152,14 @@ const BentoGrid: React.FC = () => {
 
             {/* Projects section */}
             <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 gap-3 auto-rows-[180px]"
+                className="grid grid-cols-1 md:grid-cols-2 gap-3 auto-rows-auto md:auto-rows-[180px]"
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true, amount: 0.1 }}
                 variants={sectionStagger}
             >
                 {/* 5. DeployShield */}
-                <Block className="col-span-1 row-span-1 md:row-span-2 group" whileHover={{ y: -3, transition: { duration: 0.3 } }}>
+                <Block className="col-span-1 md:row-span-2 min-h-[240px] group" whileHover={{ y: -3, transition: { duration: 0.3 } }}>
                     <div className="absolute inset-0 bg-gradient-to-t from-copper-400/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     <div className="relative z-10 h-full flex flex-col justify-between">
@@ -180,7 +180,7 @@ const BentoGrid: React.FC = () => {
                 </Block>
 
                 {/* 6. Parallax */}
-                <Block className="col-span-1 row-span-1 md:row-span-2 group" whileHover={{ y: -3, transition: { duration: 0.3 } }}>
+                <Block className="col-span-1 md:row-span-2 min-h-[240px] group" whileHover={{ y: -3, transition: { duration: 0.3 } }}>
                     <div className="absolute inset-0 bg-gradient-to-t from-copper-400/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     <div className="relative z-10 h-full flex flex-col justify-between">
@@ -206,7 +206,7 @@ const BentoGrid: React.FC = () => {
 
             {/* Experience + Contact section */}
             <motion.div
-                className="grid grid-cols-1 md:grid-cols-3 gap-3 auto-rows-[180px]"
+                className="grid grid-cols-1 md:grid-cols-3 gap-3 auto-rows-auto md:auto-rows-[180px]"
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true, amount: 0.1 }}
