@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://matanryngler.github.io/landing-page/sitemap.xml

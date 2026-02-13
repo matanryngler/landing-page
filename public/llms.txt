@@ -1,0 +1,36 @@
+# Matan Ryngler
+
+> Head of Platform at Legit Security. Leading at the intersection of platform engineering and AI.
+
+## About
+
+Matan Ryngler is a platform engineering leader based in Tel Aviv, Israel. He currently serves as Head of Platform at Legit Security, where he leads AI agent infrastructure, cloud strategy, EKS infrastructure, FinOps, and core ASPM value delivery.
+
+## Expertise
+
+- Platform Engineering
+- AI Agents & AI Infrastructure
+- Kubernetes & EKS
+- Infrastructure as Code (Terraform)
+- Cloud Automation (AWS)
+- DevOps & ArgoCD
+- FinOps
+- Claude Code & MCP
+
+## Projects
+
+### DeployShield
+Claude Code plugin that provides production safety guardrails for AI coding agents. Blocks write and mutating operations on cloud, database, IaC, and deployment CLIs before they reach production.
+- GitHub: https://github.com/matanryngler/deployshield
+
+### Parallax
+Kubernetes operator for dynamic, list-driven parallel execution of Jobs and CronJobs. Abstracts away the complexity of sharding workloads over a list of inputs.
+- GitHub: https://github.com/matanryngler/parallax
+
+## Links
+
+- Website: https://matanryngler.github.io/landing-page/
+- GitHub: https://github.com/matanryngler
+- LinkedIn: https://www.linkedin.com/in/matanryngler/
+- X/Twitter: https://x.com/matanryngler
+- Email: matanryngler@gmail.com
